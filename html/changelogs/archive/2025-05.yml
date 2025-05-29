@@ -235,3 +235,5 @@
 2025-05-29:
   XeonMations:
   - server: Server's database updated to TG modern.
+  chazzyjazzy:
+  - bugfix: fixes clothes not becoming bloody after stepping in blood / being in combat
