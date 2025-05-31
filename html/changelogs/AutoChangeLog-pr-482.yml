@@ -1,0 +1,5 @@
+author: "Kevak"
+delete-after: True
+changes:
+  - balance: "Lively Aura now costs 2 qp rather than 3."
+  - balance: "Latin now costs 1qp rather than 2."
