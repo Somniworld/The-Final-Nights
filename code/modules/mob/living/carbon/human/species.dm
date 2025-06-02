@@ -2095,6 +2095,19 @@ GLOBAL_LIST_EMPTY(selectable_races)
 	var/datum/action/fly_upper/DA = new()
 	DA.Grant(H)
 
+/datum/species/proc/GiveCoraxFlight(mob/living/carbon/werewolf/corax/target) // making a whole new proc cuz I don't want the raven to sprout a second pair of wings, this can only target Corax as it will not add a new "wings" sprite, just change the active one.
+	if(flying_species) //species that already have flying traits should not work with this proc
+		return
+	flying_species = TRUE
+	if(isnull(fly))
+		fly = new
+		fly.Grant(target)
+	var/datum/action/fly_upper/A = locate() in target.actions
+	if(A)
+		return
+	var/datum/action/fly_upper/DA = new()
+	DA.Grant(target)
+
 /datum/species/proc/RemoveSpeciesFlight(mob/living/carbon/human/H)
 	if(flying_species)
 		flying_species = FALSE
