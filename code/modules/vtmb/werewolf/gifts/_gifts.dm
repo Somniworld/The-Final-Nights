@@ -1,13 +1,20 @@
+// this contains the gift baseline as well as those common to every werewolves (Rage Heal for instance). If you're looking for the tribe-specific gifts, look in tribal_gifts.dm
+
+
+//------------------------------ Common defines ------------------------------
+
 #define DOGGY_ANIMATION_COOLDOWN 30 DECISECONDS
 
 /datum/action/gift
-	icon_icon = 'code/modules/wod13/werewolf_abilities.dmi'
-	button_icon = 'code/modules/wod13/werewolf_abilities.dmi'
+	button_icon = 'code/modules/wod13/werewolf_abilities.dmi' //This is the file for the BACKGROUND icon
+	icon_icon = 'code/modules/wod13/werewolf_abilities.dmi' //This is the file for the ACTION icon
+	var/datum/action/gift/gift
 	check_flags = AB_CHECK_IMMOBILE|AB_CHECK_CONSCIOUS
 	var/rage_req = 0
 	var/gnosis_req = 0
 	var/cool_down = 0
-
+	var/needs_target = FALSE
+	var/targeting = FALSE
 	var/allowed_to_proceed = FALSE
 
 /datum/action/gift/ApplyIcon(atom/movable/screen/movable/action_button/current_button, force = FALSE)
@@ -36,12 +43,98 @@
 		allowed_to_proceed = FALSE
 		return
 	cool_down = world.time
-	allowed_to_proceed = TRUE
-	if(rage_req)
-		adjust_rage(-rage_req, owner, FALSE)
-	if(gnosis_req)
-		adjust_gnosis(-gnosis_req, owner, FALSE)
-	to_chat(owner, "<span class='notice'>You activate the [name]...</span>")
+
+	if(needs_target)
+		if (targeting)//easy de-targeting
+			end_targeting()
+			. = FALSE
+			return .
+		begin_targeting()
+
+	else
+		allowed_to_proceed = TRUE
+		if(rage_req)
+			adjust_rage(-rage_req, owner, FALSE)
+		if(gnosis_req)
+			adjust_gnosis(-gnosis_req, owner, FALSE)
+		to_chat(owner, "<span class='notice'>You activate the [name]...</span>")
+
+/datum/action/gift/proc/activate(atom/target) // a specific proc that is called for targetted Gifts, in opposition to Trigger()
+	SHOULD_CALL_PARENT(TRUE)
+
+	//ensure everything is in place for activation to be possible
+	if(!target)
+		return FALSE
+	if(!gift?.owner)
+		return FALSE
+
+	SEND_SIGNAL(src, COMSIG_POWER_ACTIVATE, src, target)
+	SEND_SIGNAL(owner, COMSIG_POWER_ACTIVATE, src, target)
+	if (target)
+		SEND_SIGNAL(target, COMSIG_POWER_ACTIVATE_ON, src)
+
+	//make it active if it can only have one active instance at a time
+
+	do_caster_notification(target)
+	do_logging(target)
+
+	owner.update_action_buttons()
+
+	return TRUE
+
+/datum/action/gift/proc/do_caster_notification(target)
+	to_chat(owner, span_warning("You cast [name][target ? " on [target]!" : "."]"))
+
+/datum/action/gift/proc/do_logging(target)
+	log_combat(owner, target ? target : owner, "casted the power [src.name] on")
+
+
+
+/datum/action/gift/proc/end_targeting() // This is the same code as for Discipline targetting.
+	var/client/client = owner?.client
+	if (!client)
+		return
+	if (!targeting)
+		return
+
+	UnregisterSignal(owner, COMSIG_MOB_CLICKON)
+	targeting = FALSE
+	owner.gift_targeting = FALSE
+	client.mouse_pointer_icon = initial(client.mouse_pointer_icon)
+
+/datum/action/gift/proc/handle_click(mob/source, atom/target, click_parameters)
+	SIGNAL_HANDLER
+
+	var/list/modifiers = params2list(click_parameters)
+
+	//ensure we actually need a target, or cancel on right click
+	if (!targeting || modifiers["right"])
+		SEND_SOUND(owner, sound('code/modules/wod13/sounds/highlight.ogg', 0, 0, 50))
+		end_targeting()
+		return
+
+	//actually try to use the Gift on the target
+	spawn()
+		if (src.activate(target))
+			end_targeting()
+
+	return COMSIG_MOB_CANCEL_CLICKON
+
+/datum/action/gift/proc/begin_targeting()
+	var/client/client = owner?.client
+	if (!client)
+		return
+	if (targeting)
+		return
+	SEND_SOUND(owner, sound('code/modules/wod13/sounds/highlight.ogg', 0, 0, 50))
+	RegisterSignal(owner, COMSIG_MOB_CLICKON, PROC_REF(handle_click))
+	targeting = TRUE
+	owner.gift_targeting = TRUE
+	client.mouse_pointer_icon = 'icons/effects/mouse_pointers/discipline.dmi'
+
+
+// ------------------------------ Gifts begin here. ------------------------------
+
 
 /datum/action/gift/falling_touch
 	name = "Falling Touch"
@@ -175,10 +268,15 @@
 		for(var/mob/living/A in orange(6, owner))
 			if(A)
 				if(isgarou(A) || iswerewolf(A))
-					A.emote("howl")
-					playsound(get_turf(A), pick('code/modules/wod13/sounds/awo1.ogg', 'code/modules/wod13/sounds/awo2.ogg'), 100, FALSE)
-					spawn(10)
+					if (HAS_TRAIT(A, TRAIT_CORAX))
+						A.emote("caw")
+						spawn(10)
 						adjust_gnosis(1, A, TRUE)
+					else
+						A.emote("howl")
+						playsound(get_turf(A), pick('code/modules/wod13/sounds/awo1.ogg', 'code/modules/wod13/sounds/awo2.ogg'), 70, FALSE)
+						spawn(10)
+							adjust_gnosis(1, A, TRUE)
 
 /datum/action/gift/mindspeak
 	name = "Mindspeak"
@@ -247,12 +345,26 @@
 /datum/action/gift/truth_of_gaia
 	name = "Truth Of Gaia"
 	desc = "As judges of the Litany, Philodox have the ability to sense whether others have spoken truth or falsehood."
+	needs_target = TRUE
 	button_icon_state = "truth_of_gaia"
 
 /datum/action/gift/truth_of_gaia/Trigger(trigger_flags)
 	. = ..()
-//	if(allowed_to_proceed)
-//
+
+
+/datum/action/gift/truth_of_gaia/activate(var/mob/living/carbon/target)
+	. = ..()
+	if (!iscarbon(target))
+		return
+	target.say("I was targetted properly")
+	show_interface(target)
+
+/datum/action/gift/truth_of_gaia/proc/show_interface(mob/user, datum/tgui/ui = null, force_open = TRUE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.default_state)  // This calls onto the custom Truth of Gaia interface.
+	ui = SStgui.try_update_ui(user, src, ui, force_open)
+	if(!ui)
+		ui = new(user, src, "TruthOfGaia", name, 400, 300, master_ui, state)
+		ui.open()
+
 
 /datum/action/gift/mothers_touch
 	name = "Mother's Touch"

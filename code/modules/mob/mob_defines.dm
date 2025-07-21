@@ -243,7 +243,8 @@
 
 	///If the blood cell cursor is currently active due to a Discipline being targeted
 	var/discipline_targeting = FALSE
-
+	///If the gift targetting reticle is active, due to a werewolf gift being targeted.
+	var/gift_targeting = FALSE
 	///the icon currently used for the typing indicator's bubble
 	var/active_typing_indicator
 	///the icon currently used for the thinking indicator's bubble

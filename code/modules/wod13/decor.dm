@@ -1614,7 +1614,7 @@
 
 /obj/were_ice
 	name = "ice block"
-	desc = "Stores some precious organs..."
+	desc = "A thick sheet of ice covering a human shape within, seems impossibly resilient."
 	icon = 'code/modules/wod13/werewolf_lupus.dmi'
 	icon_state = "ice_man"
 	plane = GAME_PLANE
@@ -1623,9 +1623,11 @@
 
 /obj/were_ice/lupus
 	icon_state = "ice_wolf"
+	desc = "A thick sheet of ice covering a dog-like shape within, seems impossibly resilient."
 
 /obj/were_ice/crinos
 	icon = 'code/modules/wod13/werewolf.dmi'
+	desc = "A thick sheet of ice covering something monstrous, seems impossibly resilient. You have the strong feeling you don't want to be there when it reveals it's content."
 	icon_state = "ice"
 	pixel_w = -8
 

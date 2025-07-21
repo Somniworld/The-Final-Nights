@@ -1,3 +1,5 @@
+// This file contains all the tribe-related gifts, put auspice-specific gifts in auspice_gifts.dm
+
 /datum/action/gift/stoic_pose
 	name = "Stoic Pose"
 	desc = "With this gift garou sends theirself into cryo-state, ignoring all incoming damage but also covering themself in a block of ice."

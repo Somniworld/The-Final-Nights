@@ -1258,6 +1258,8 @@
 		client.mouse_pointer_icon = examine_cursor_icon
 	else if(discipline_targeting)
 		client.mouse_pointer_icon = discipline_cursor_icon
+	else if(gift_targeting)
+		client.mouse_pointer_icon = discipline_cursor_icon
 	else if(shootahell)
 		client.mouse_pointer_icon = pvp_cursor_icon
 	else if (ismecha(loc))
