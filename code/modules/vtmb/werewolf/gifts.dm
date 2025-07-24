@@ -280,6 +280,8 @@
 			mobs_in_range += target
 		for(var/mob/living/target in mobs_in_range)
 			var/is_wyrm = 0
+			if(HAS_TRAIT(target, TRAIT_WYRMTAINTED))
+				is_wyrm = 1
 			if(iscathayan(target))
 				var/mob/living/carbon/human/kj = target
 				if(!kj.check_kuei_jin_alive())

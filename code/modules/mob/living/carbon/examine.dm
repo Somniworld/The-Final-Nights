@@ -143,6 +143,10 @@
 			var/weaver_taint = NONE
 			var/wyld_taint = NONE
 
+			if (ishuman(src))
+				if(HAS_TRAIT(src,TRAIT_WYRMTAINTED))
+					wyrm_taint++
+
 			if (iskindred(src)) //vampires are static, and may be Wyrm-tainted depending on behaviour
 				var/mob/living/carbon/human/vampire = src
 				weaver_taint++
