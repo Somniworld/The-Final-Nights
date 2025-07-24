@@ -352,17 +352,17 @@
 	. = ..()
 
 
-/datum/action/gift/truth_of_gaia/activate(var/mob/living/carbon/target)
+/datum/action/gift/truth_of_gaia/activate(mob/living/carbon/target)
 	. = ..()
 	if (!iscarbon(target))
 		return
 	target.say("I was targetted properly")
 	show_interface(target)
 
-/datum/action/gift/truth_of_gaia/proc/show_interface(mob/user, datum/tgui/ui = null, force_open = TRUE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.default_state)  // This calls onto the custom Truth of Gaia interface.
+/datum/action/gift/truth_of_gaia/proc/show_interface(mob/user, datum/tgui/ui = null, force_open = TRUE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.always_state)  // This calls onto the custom Truth of Gaia interface.
 	ui = SStgui.try_update_ui(user, src, ui, force_open)
 	if(!ui)
-		ui = new(user, src, "TruthOfGaia", name, 400, 300, master_ui, state)
+		ui = new(user, user, "TruthOfGaia", name, 400, 300, master_ui, state)
 		ui.open()
 
 
