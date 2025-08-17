@@ -3,16 +3,11 @@ import { InputButtons } from "./common/InputButtons";
 import { useBackend, useLocalState } from "../backend";
 import { KEY_ESCAPE } from "tgui-core/keycodes";
 import { Box, Section, Stack, TextArea, Button } from "tgui-core/components";
-
-export const sanitizeMultiline = toSanitize => {
-  return toSanitize.replace(/(\n|\r\n){3,}/, "\n\n");
-};
-
-export const removeAllSkiplines = toSanitize => {
-  return toSanitize.replace(/[\r\n]+/, "");
-};
+import { sanitizeText } from '../sanitize';
 
 export const TruthOfGaia = (props) => {
+  const {act} = useBackend()
+  const [message,setMessage] = useLocalState("")
   return (
     <Window title={'Truth of Gaia'}>
       <Window.Content>
@@ -24,10 +19,15 @@ export const TruthOfGaia = (props) => {
             maxLength={500}
             onEscape={() => act("cancel")}
             placeholder="Respond here, 500 characters max"
+            sanitizeText
+            value = {message}
+            onChange = {(e,value) => setMessage(value)}
       />
       <Box>Was your character's answer truthful, from an OOC point of view? BE HONEST.</Box>
-        <Button>TRUTH</Button>
-        <Button>LIE</Button>
+        <Button color ="green">TRUTH</Button>
+        <Button color ="red">LIE</Button>
+      <Box>Send reply?</Box>
+        <Button color ="blue" onClick={() => act("send_answer",{text:message})} >DONE</Button>
       </Window.Content>
     </Window>
   );

@@ -359,12 +359,21 @@
 	target.say("I was targetted properly")
 	show_interface(target)
 
+
 /datum/action/gift/truth_of_gaia/proc/show_interface(mob/user, datum/tgui/ui = null, force_open = TRUE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.always_state)  // This calls onto the custom Truth of Gaia interface.
 	ui = SStgui.try_update_ui(user, src, ui, force_open)
 	if(!ui)
 		ui = new(user, user, "TruthOfGaia", name, 400, 300, master_ui, state)
 		ui.open()
 
+/datum/action/gift/truth_of_gaia/ui_act(action, params)
+	. = ..()
+	if(action == "send_answer")
+		var/mob/living/carbon/target = usr
+		if(!target) return
+		var/msg = params["text"]
+		if(!isnull(msg) && msg != "")
+			target.say(msg)
 
 /datum/action/gift/mothers_touch
 	name = "Mother's Touch"
